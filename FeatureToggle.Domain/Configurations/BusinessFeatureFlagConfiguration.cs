@@ -1,4 +1,5 @@
-﻿using FeatureToggle.Domain.Entity.BusinessSchema;
+﻿using System.Reflection.Emit;
+using FeatureToggle.Domain.Entity.BusinessSchema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,14 +10,18 @@ namespace FeatureToggle.Domain.Configurations
         public void Configure(EntityTypeBuilder<BusinessFeatureFlag> builder)
         {
             builder.ToTable("BusinessFeatureFlag", "business");
+            builder.HasKey(x => x.FeatureFlagId);
 
-            builder.HasOne(bf => bf.Business)
-              .WithMany(b => b.BusinessFeatures)
-              .HasForeignKey(bf => bf.BusinessId);
+            builder
+            .HasOne(bf => bf.Business) // BusinessFeatureFlag has one Business
+            .WithMany() // Business can have many BusinessFeatureFlags (no navigation property)
+            .HasForeignKey(bf => bf.BusinessId); // BusinessId is the foreign key
 
-            builder.HasOne(bf => bf.Feature)
-                   .WithMany(f => f.BusinessFeatures)
-                   .HasForeignKey(bf => bf.FeatureId);
+            // Configure BusinessFeatureFlag-Feature relationship
+            builder
+                .HasOne(bf => bf.Feature) // BusinessFeatureFlag has one Feature
+                .WithMany() // Feature can have many BusinessFeatureFlags (no navigation property)
+                .HasForeignKey(bf => bf.FeatureId);
         }
     }
 }

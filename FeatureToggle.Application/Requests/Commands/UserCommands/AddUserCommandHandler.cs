@@ -25,7 +25,7 @@ namespace FeatureToggle.Application.Requests.Commands.UserCommands
                 return new AddUserResponseDTO
                 {
                     Success = false,
-                    Message = "Failed to create user",
+                    Message = "Failed to create user , one or more validations failed",
                     Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList()
                 };
             }

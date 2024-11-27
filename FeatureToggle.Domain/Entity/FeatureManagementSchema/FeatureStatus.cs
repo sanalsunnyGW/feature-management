@@ -9,7 +9,7 @@ namespace FeatureToggle.Domain.Entity.FeatureManagementSchema
 
     public enum Actions
     {
-        Enabled, Disabled
+        Disabled, Enabled
     }
 
 }

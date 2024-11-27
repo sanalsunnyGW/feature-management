@@ -1,67 +1,70 @@
 <app-navbar></app-navbar>
 
 
-    <div class="container-fluid d-flex justify-content-center">
-        <div class="w-50 mx-5 my-3">
-            <form class="navbar-form navbar-left ">
-                <div class="d-flex">
-                    <input type="text" class="form-control" placeholder="Search" name="searchQuery" />
+<div class="container-fluid d-flex justify-content-center">
+    <div class="w-50 mx-5 my-3">
+        <form class="navbar-form navbar-left ">
+            <div class="d-flex">
+                <input type="text" [(ngModel)]="searchBarInput" class="form-control" placeholder="Search"
+                    name="searchQuery" />
+                <!--Filter Dropdown-->
+                <div class="dropdown">
 
-                    <div class="dropdown">
-                       
-                        <button type="button" class="btn btn-primary ms-3" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-filter"></i></button>
-                        <ul class="dropdown-menu" style="min-width: 12rem;" aria-labelledby="dropdownMenuButton1">
-                
-                            <div class="mx-3">
-                                <li>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" [value]=featureTypeEnum.Feature id="filterAction1">
-                                        <label class="form-check-label" for="filterAction1">
-                                            Feature Toggle
-                                        </label>
-                                    </div>
-                                </li>
-                
-                                <li>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" [value]=featureTypeEnum.Release id="filterAction2">
-                                        <label class="form-check-label" for="filterAction2">
-                                            Release Toggle
-                                        </label>
-                                    </div>
-                                </li>
-                
-                                <li>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" [value]=featureStatusEnum.Enabled id="filterAction3">
-                                        <label class="form-check-label" for="filterAction3">
-                                            Enabled
-                                        </label>
-                                    </div>
-                                </li>
-                
-                                <li>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" [value]=featureStatusEnum.Disabled id="filterAction4">
-                                        <label class="form-check-label" for="filterAction4">
-                                            Disabled
-                                        </label>
-                                    </div>
-                                </li>
-                                <li class="mt-2">
-                                    <button class="btn btn-primary w-100" (click)="applyFilters();">Apply Filter</button>
-                                </li>
-                            </div>
-                        </ul>
-                    </div>
+                    <button type="button" class="btn btn-primary ms-3" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-filter"></i></button>
+                    <ul class="dropdown-menu" style="min-width: 12rem;" aria-labelledby="dropdownMenuButton1">
 
-                    <button type="submit" class="btn btn-primary ms-3 w-25">Search Feature</button>
+                        <div class="mx-3">
+                            <li>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="filterAction1">
+                                    <label class="form-check-label" for="filterAction1">
+                                        Feature Toggle
+                                    </label>
+                                </div>
+                            </li>
+
+                            <li>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="filterAction2" name="rtCheckbox"
+                                        [(ngModel)]="rtCheckboxSate" (change)="toggleReleaseCheckbox()">
+                                    <label class="form-check-label" for="filterAction2">
+                                        Release Toggle
+                                    </label>
+                                </div>
+                            </li>
+
+                            <li>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="filterAction3"
+                                        [disabled]="!rtCheckboxSate">
+                                    <label class="form-check-label" for="filterAction3">
+                                        Enabled
+                                    </label>
+                                </div>
+                            </li>
+
+                            <li>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="filterAction4"
+                                        [disabled]="!rtCheckboxSate">
+                                    <label class="form-check-label" for="filterAction4">
+                                        Disabled
+                                    </label>
+                                </div>
+                            </li>
+                        </div>
+                    </ul>
                 </div>
-                
-            </form>
-        </div>
-    
 
+                <button type="submit" class="btn btn-primary ms-3 w-25" (click)="applyFilters();">Search
+                    Feature</button>
+            </div>
+
+        </form>
     </div>
 
-    <app-feature-card></app-feature-card>
+
+</div>
+
+<app-feature-card [selectedFilters]="selectedFilters2" (applyFilters)="applyFilters()"></app-feature-card>
