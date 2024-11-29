@@ -8,8 +8,6 @@ import { RouterOutlet } from '@angular/router';
   standalone: true,
   imports: [
     RouterOutlet,
-    // BrowserAnimationsModule,
-    // MatDialogModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

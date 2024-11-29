@@ -1,36 +1,37 @@
-import { booleanAttribute, Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { FeatureService } from '../../feature.service';
 import { Router, RouterLink } from '@angular/router';
-import { ValidatorFn, ValidationErrors,ReactiveFormsModule} from '@angular/forms';
-import { ISignUpAccept, ISignUpForm } from '../../interface/feature.interface';
+import { ValidatorFn, ReactiveFormsModule } from '@angular/forms';
+import { ISignUpAccept, ISignUpForm, ISignUpReturn } from '../../interface/feature.interface';
 import { ToastrService } from 'ngx-toastr';
 
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [ReactiveFormsModule,RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.scss'
 })
-export class SignupComponent {
-  userForm : FormGroup<ISignUpForm>;
+export class SignupComponent implements OnInit {
+  userForm: FormGroup<ISignUpForm>;
+  isLoading?: boolean ;
 
-  passwordMatchValidator: ValidatorFn = (control: AbstractControl) : null => {
+  passwordMatchValidator: ValidatorFn = (control: AbstractControl): null => {
     const password = control.get('password')
     const confirmPassword = control.get('confirmPassword')
 
-    if(password && confirmPassword && password.value != confirmPassword.value)
+    if (password && confirmPassword && password.value != confirmPassword.value)
       confirmPassword?.setErrors({ passwordMismatch: true })
     else
-    confirmPassword?.setErrors(null)
-  
+      confirmPassword?.setErrors(null)
+
     return null;
   }
 
-  constructor(private fb: FormBuilder, 
-    private userService: FeatureService, 
+  constructor(private fb: FormBuilder,
+    private userService: FeatureService,
     private router: Router,
     private toastr: ToastrService
   ) {
@@ -38,53 +39,66 @@ export class SignupComponent {
     this.userForm = this.fb.group({
       fullName: new FormControl('', Validators.required),
       email: new FormControl('', [
-        Validators.required,Validators.email, Validators.pattern(/^[a-zA-Z0-9._%+-]+@geekywolf\.com$/)
+        Validators.required, Validators.email, Validators.pattern(/^[a-zA-Z0-9._%+-]+@geekywolf\.com$/)
       ]),
       password: new FormControl('', [
-        Validators.required, 
+        Validators.required,
         Validators.minLength(6),
         Validators.pattern(/(?=.*[^a-zA-Z0-9])/)
       ]),
       confirmPassword: new FormControl('')
       ,
-    },{validators:this.passwordMatchValidator})
+    }, { validators: this.passwordMatchValidator })
   }
 
+  ngOnInit(): void {
+    if (this.userService.isLoggedIn()) {
+      this.router.navigate(['/home']);
+    }
+  }
 
   isSubmitted: boolean = false;
 
 
   onSubmit() {
+    this.isLoading = true;
     this.isSubmitted = true;
     if (this.userForm.valid) {
-      const userData : ISignUpAccept = {
-        fullName: this.userForm.value.fullName ?? '',
-        email : this.userForm.value.email ?? '',
-        password : this.userForm.value.email ?? '',
+      const userData: ISignUpAccept = {
+        name: this.userForm.value.fullName ?? '',
+        email: this.userForm.value.email ?? '',
+        password: this.userForm.value.password ?? '',
       }
 
+
       this.userService.addUser(userData).subscribe({
-        next: (response: any) => {
-          this.toastr.success('New user created!','Registration Successful')
+        next: (response: ISignUpReturn) => {
+          if (response.success) {
+            this.toastr.success('New user created!', 'Registration Successful');
+            this.router.navigate(['user/login']);
+            this.isLoading = false;
+          }
+          else {
+            this.toastr.error('User was not created', 'Registration Unsuccessful');
+            this.isLoading = false;
+          }
 
-
-          this.router.navigate(['user/login']);
         },
-        error: (error: any) => {
+        error: (error) => {
 
-          this.toastr.error('User was not created','Registration Unsuccessful')
+          this.toastr.error('User was not created', 'Registration Unsuccessful')
 
         }
       });
     } else {
 
-      this.toastr.error('Enter valid details','Registration Unsuccessful')
+      this.toastr.error('Enter valid details', 'Registration Unsuccessful')
     }
   }
 
-  hasDisplayableError(controlName: string ):Boolean {
-      const control = this.userForm.get(controlName);
-      return Boolean(control?.invalid) && (this.isSubmitted || Boolean(control?.touched))
+  hasDisplayableError(controlName: string): Boolean {
+    const control = this.userForm.get(controlName);
+    return Boolean(control?.invalid) && (this.isSubmitted || Boolean(control?.touched))
 
   }
 }

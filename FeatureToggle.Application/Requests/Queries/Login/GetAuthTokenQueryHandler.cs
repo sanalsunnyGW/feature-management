@@ -18,24 +18,26 @@ namespace FeatureToggle.Application.Requests.Queries.Login
 
         public async Task<LoginResponseDTO> Handle(GetAuthTokenQuery request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            User? user = await _userManager.FindByEmailAsync(request.Email);
             if (user != null && await _userManager.CheckPasswordAsync(user, request.Password))
             {
-                var secretKey = _optionsMonitor.CurrentValue.JWTSecret;
-                var signInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-                var tokenDescriptor = new SecurityTokenDescriptor
+                string secretKey = _optionsMonitor.CurrentValue.JWTSecret;
+                SymmetricSecurityKey signInKey = new(Encoding.UTF8.GetBytes(secretKey));
+                SecurityTokenDescriptor tokenDescriptor = new()
                 {
-                    Subject = new ClaimsIdentity(new Claim[]
-                    {
+                    Subject = new ClaimsIdentity(
+                    [
                         new Claim("UserID",user.Id.ToString()),
                         new Claim("IsAdmin",user.IsAdmin.ToString())
-                    }),
-                    Expires = DateTime.UtcNow.AddDays(1),
-                    SigningCredentials = new SigningCredentials(signInKey,SecurityAlgorithms.HmacSha256Signature)
+                    ]),
+                    Expires = DateTime.UtcNow.AddHours(12),
+                    SigningCredentials = new SigningCredentials(signInKey,SecurityAlgorithms.HmacSha256Signature),
+                    Issuer = _optionsMonitor.CurrentValue.Issuer,
+                    Audience = _optionsMonitor.CurrentValue.Audience,
                 };
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-                var token = tokenHandler.WriteToken(securityToken);
+                JwtSecurityTokenHandler tokenHandler = new();
+                SecurityToken securityToken = tokenHandler.CreateToken(tokenDescriptor);
+                string token = tokenHandler.WriteToken(securityToken);
 
                 return new LoginResponseDTO { Token = token };
             }

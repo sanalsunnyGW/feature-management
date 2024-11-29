@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FeatureService } from '../../feature.service';
-import { ILoginAccept, ILoginForm } from '../../interface/feature.interface';
+import { ILoginAccept, ILoginForm, ILoginReturn } from '../../interface/feature.interface';
 import { ToastrService } from 'ngx-toastr';
 
 
@@ -14,9 +14,10 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   userForm: FormGroup<ILoginForm>;
   isSubmitted: boolean = false;
+  isLoading?: boolean ;
 
   constructor(private fb: FormBuilder,
     private router: Router,
@@ -32,36 +33,47 @@ export class LoginComponent {
     });
   }
 
+  ngOnInit(): void {
+    if (this.userService.isLoggedIn()) {
+      this.router.navigate(['/home']);
+    }
+  }
+
   onSubmit() {
+    this.isLoading = true;
     if (this.userForm.valid) {
-      const userDetails : ILoginAccept = {
+      const userDetails: ILoginAccept = {
         email: this.userForm.value.email ?? '',
         password: this.userForm.value.password ?? ''
       }
 
       this.userService.login(userDetails).subscribe({
-        next: (response) => {
+        next: (response: ILoginReturn) => {
 
-
-          //Logic after merging backend
-
-
-          // const userId = response.userId;
-          // console.log('User logged in successfully:', userId);
-
-          this.router.navigate(['/homepage']);
-          this.toastr.success('Welcome back!', 'Login Successful')
-
-
+          if (response.token !== null) {
+            this.userService.saveToken(response.token);
+            this.router.navigate(['/home']);
+            this.toastr.success('Welcome back!', 'Login Successful');
+            this.isLoading = false;
+          }
+          else {
+            this.toastr.error('Something went wrong', 'Login failed')
+            this.isLoading = false;
+            throw new Error('Login failed');
+          }
         },
         error: (error) => {
-
-          this.toastr.error('Invalid login credentials', 'Login Unsuccessful')
+          if (error.status === 400) {
+            this.toastr.error('Invalid login credentials', 'Login failed')
+          }
+          else {
+            this.toastr.error('Something went wrong', 'Login failed')
+          }
         }
       });
     }
     else {
-      this.toastr.error('Invalid login credentials', 'Login Unsuccessful')
+      this.toastr.error('Something went wrong', 'Login failed')
     }
   }
 

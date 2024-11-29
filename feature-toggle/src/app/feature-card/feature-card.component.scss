@@ -1,29 +1,34 @@
-.status-border-active{
-    border-top: 10px solid;
-    border-color: rgb(25,135,84);
-    
+.status-border-active {
+  border-top: 10px solid;
+  border-color: rgb(25, 135, 84);
+
 }
 
-.status-border-inactive{
-    border-top: 10px solid;
-    border-color: rgb(180, 29, 29);
-    
+.status-border-inactive {
+  border-top: 10px solid;
+  border-color: rgb(180, 29, 29);
+
 }
 
-.status-border-disable{
-    border-top: 10px solid;
-    border-color: rgb(108, 106, 106);
+.status-border-disable {
+  border-top: 10px solid;
+  border-color: rgb(108, 106, 106);
 }
 
-.status-border-feature{
-    border-top: 10px solid;
-    border-color: rgb(255, 255, 255);
+.status-border-feature {
+  border-top: 10px solid;
+  border-color: rgb(255, 255, 255);
+}
+
+.card-min-height {
+  min-height: 13em;
 }
 
 
-
-
-
-
-
-
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #ccc;
+  padding: 0;
+}

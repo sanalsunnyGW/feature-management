@@ -1,58 +1,70 @@
 <div class="mx-5 mt-5 mb-4 ">
     <div class="row">
-
-        @for (feature of paginatedFeatures; track feature) {
+        @if (isLoading) {
+        <div class="loading-overlay">
+            <span class="loader"></span>
+        </div>
+        }
+        @for (feature of paginatedfeatures.featureList; track feature.featureName) {
         <div class="col-md-3 mb-3">
-            <div class="card" [ngClass]="{
-                'status-border-feature': feature.type === featureTypeEnum.Feature,
-                'status-border-active': feature.type === featureTypeEnum.Release && feature.status === featureStatusEnum.Enabled,
-                'status-border-inactive': feature.type === featureTypeEnum.Release && feature.status === featureStatusEnum.Disabled
+            <div class="card card-min-height rounded-4" [ngClass]="{
+                'status-border-feature': feature.featureType === 2,
+                'status-border-active': feature.featureType === 1 && feature.isEnabled === true,
+                'status-border-inactive': feature.featureType === 1 && (feature.isEnabled === false || feature.isEnabled === null)
               }">
                 <div class="card-body">
-                    <h4 class="card-title">{{ feature.name }}</h4>
-                    <p class="card-text">{{ feature.type === featureTypeEnum.Feature ? 'Feature Toggle' : 'Release Toggle' }}</p>
+                    <div class="" style="min-height: 8em;">
+                        <h5 class="card-title">{{ feature.featureName }}</h5>
 
+
+                        <p class="card-text fs-5">{{ feature.featureType === 2 ? 'Feature Toggle' : 'Release Toggle' }}
+                        </p>
+                    </div>
                     <!-- Feature Toggle Buttons -->
+                    <div class="">
+                        <div class="d-flex">
+                            @if(feature.featureType === 2){
+                            <button type="button" class="btn btn-primary"
+                                (click)="openDialog(true,feature.featureId)">Enable</button>
 
-                    <div class="d-flex">
-                    @if(feature.type === 'feature'){
-                    <button type="button" class="btn btn-primary" (click)="openDialog(featureStatusEnum.Enabled)">Enable</button>
+                            @if(isAdmin){
+                            <button type="button" class="btn btn-primary ms-2"
+                                (click)="openDialog(false,feature.featureId)">Disable</button>
+                            }
 
-                        @if(isAdmin){
-                            <button type="button" class="btn btn-primary ms-2" (click)="openDialog(featureStatusEnum.Disabled)">Disable</button>
-                        }
-
-                        @if (!isAdmin) {
+                            @if (!isAdmin) {
                             <div class="text-center">
                                 <div class="badge bg-danger text-dark text-wrap w-100 ms-2 my-1">
                                     <p class="m-1">To disable contact Admin</p>
                                 </div>
                             </div>
-                        }
-                    
-                    }
-                    </div>
-                    
+                            }
+
+                            }
+                        </div>
 
 
-                    <!-- Release Toggle Button -->
-                    @if(feature.type === 'release'){
 
-                        @if(feature.status === featureStatusEnum.Disabled){
-                        <button type="button" class="btn btn-success" (click)="feature.status = featureStatusEnum.Enabled">
+                        <!-- Release Toggle Button -->
+                        @if(feature.featureType === 1){
+
+                        @if(feature.isEnabled === false || feature.isEnabled === null){
+                        <button type="button" class="btn btn-success"
+                            (click)="feature.isEnabled = true; update_Toggle(feature.featureId,null,true)">
                             Enable
                         </button>
 
                         }
 
-                        @if(feature.status === featureStatusEnum.Enabled && isAdmin){
-                        <button type="button" class="btn btn-danger" (click)="feature.status = featureStatusEnum.Disabled">
+                        @if(feature.isEnabled === true && isAdmin){
+                        <button type="button" class="btn btn-danger"
+                            (click)="feature.isEnabled = false; update_Toggle(feature.featureId,null,false)">
                             Disable
                         </button>
 
                         }
 
-                        @if (feature.status === featureStatusEnum.Enabled && !isAdmin) {
+                        @if (feature.isEnabled === true && !isAdmin) {
                         <div class="text-center">
                             <div class="badge bg-danger text-dark text-wrap w-75 my-1">
                                 <p class="m-1">To disable contact Admin</p>
@@ -61,7 +73,8 @@
                         }
 
 
-                    }
+                        }
+                    </div>
 
                 </div>
             </div>
@@ -77,7 +90,7 @@
 <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center pb-2">
         <!-- Previous Button -->
-        <li class="page-item" [class.disabled]="currentPage === 1">
+        <li class="page-item" [class.disabled]="pageNumber === 0">
             <a class="page-link" href="#" (click)="previousPage();$event.preventDefault()" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
             </a>
@@ -85,17 +98,16 @@
 
         <!-- Page Numbers -->
 
-        @for( page of [].constructor(totalPages());track page; let i = $index){
-            
-            <li class="page-item"
-            [class.active]="currentPage === i + 1">
-            <a class="page-link" href="#" (click)="goToPage(i + 1);$event.preventDefault()">{{ i + 1 }}</a>
-            </li>
+        @for( page of [].constructor(this.paginatedfeatures.totalPages);track i; let i = $index){
+
+        <li class="page-item" [class.active]="pageNumber === i">
+            <a class="page-link" href="#" (click)="goToPage(i);$event.preventDefault()">{{ i + 1 }}</a>
+        </li>
 
         }
 
         <!-- Next Button -->
-        <li class="page-item" [class.disabled]="currentPage === totalPages()">
+        <li class="page-item" [class.disabled]="pageNumber === this.paginatedfeatures.totalPages">
             <a class="page-link" href="#" (click)="nextPage();$event.preventDefault()" aria-label="Next">
                 <span aria-hidden="true">&raquo;</span>
             </a>

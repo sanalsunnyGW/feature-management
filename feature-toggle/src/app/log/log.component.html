@@ -1,0 +1,111 @@
+<app-navbar></app-navbar>
+
+@if (isLoading) {
+  <div class="loading-overlay">
+      <span class="loader"></span>
+  </div>
+  }
+
+<div class="container-fluid d-flex justify-content-center">
+  <div class="w-75 mx-5 my-3">
+      <form class="navbar-form navbar-left ">
+          <div class="d-flex">
+              <input type="text" class="form-control" placeholder="Enter Feature Name" name="searchQuery" [(ngModel)]="searchBarInput"/>
+              <button type="submit" (click)="resetPageNo();fetchPaginatedLog()" class="btn btn-primary ms-3 w-25">Search Feature</button>
+              <button (click)="downloadTrigger()" class="btn btn-primary ms-3 w-25">Download report</button>
+          </div>
+      </form>
+  </div>
+</div>
+
+
+
+
+
+<div class="table-container m-4">
+  <table mat-table [dataSource]="dataSource.logs" class="mat-elevation-z8 ">
+
+    <ng-container matColumnDef="serialNo">
+      <th mat-header-cell *matHeaderCellDef> No. </th>
+      <td mat-cell *matCellDef="let element; let i = index"> {{ (this.dataSource.currentPage * this.dataSource.pageSize) + (i+1)}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="UserId">
+      <th mat-header-cell *matHeaderCellDef> User ID </th>
+      <td mat-cell *matCellDef="let element"> {{ element.userId }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Username">
+      <th mat-header-cell *matHeaderCellDef> Username </th>
+      <td mat-cell *matCellDef="let element"> {{ element.userName }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="FeatureId">
+      <th mat-header-cell *matHeaderCellDef> Feature ID </th>
+      <td mat-cell *matCellDef="let element"> {{ element.featureId }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="FeatureName">
+      <th mat-header-cell *matHeaderCellDef> Feature Name </th>
+      <td mat-cell *matCellDef="let element"> {{ element.featureName }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="BusinessId">
+      <th mat-header-cell *matHeaderCellDef> Business ID </th>
+      <td mat-cell *matCellDef="let element"> {{ element.businessId === null ? "N/A" : element.businessId }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="BusinessName">
+      <th mat-header-cell *matHeaderCellDef> Business Name </th>
+      <td mat-cell *matCellDef="let element"> {{ element.businessName === null ? "N/A" : element.businessName }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Date">
+      <th mat-header-cell *matHeaderCellDef> Date </th>
+      <td mat-cell *matCellDef="let element"> {{ element.time | date}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Time">
+      <th mat-header-cell *matHeaderCellDef> Time </th>
+      <td mat-cell *matCellDef="let element"> {{ element.time | date: 'HH:mm:ss'}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="Action">
+      <th mat-header-cell *matHeaderCellDef> Action </th>
+      <td mat-cell *matCellDef="let element"> {{ element.action === 1 ? "Enable" : "Disable" }} </td>
+    </ng-container>
+
+    
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>
+
+
+<nav aria-label="Page navigation example">
+  <ul class="pagination justify-content-center pb-2">
+      <!-- Previous Button -->
+      <li class="page-item" [class.disabled]="pageNumber === 0">
+          <a class="page-link" href="#" (click)="previousPage();$event.preventDefault()" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+          </a>
+      </li>
+
+      <!-- Page Numbers -->
+
+      @for( page of [].constructor(this.dataSource.totalPages);track i; let i = $index){
+
+      <li class="page-item" [class.active]="pageNumber === i">
+          <a class="page-link" href="#" (click)="goToPage(i);$event.preventDefault()">{{ i + 1 }}</a>
+      </li>
+
+      }
+
+      <!-- Next Button -->
+      <li class="page-item" [class.disabled]="pageNumber === this.dataSource.totalPages">
+          <a class="page-link" href="#" (click)="nextPage();$event.preventDefault()" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+          </a>
+      </li>
+  </ul>
+</nav>

@@ -7,7 +7,7 @@
         <mat-select [formControl]="businessControl" required>
             <mat-option>--</mat-option>
             @for (business of data.businesses; track business) {
-            <mat-option [value]="business">{{business.name}}</mat-option>
+            <mat-option [value]="business">{{business.businessId}}</mat-option>
             }
         </mat-select>
         @if (businessControl.hasError('required')) {

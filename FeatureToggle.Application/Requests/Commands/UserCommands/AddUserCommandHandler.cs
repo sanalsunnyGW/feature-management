@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FeatureToggle.Application.DTOs;
+﻿using FeatureToggle.Application.DTOs;
 using FeatureToggle.Domain.Entity.FeatureManagementSchema;
 using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
@@ -16,22 +12,22 @@ namespace FeatureToggle.Application.Requests.Commands.UserCommands
         public async Task<AddUserResponseDTO> Handle(AddUserCommand request, CancellationToken cancellationToken)
         {
 
-            User newUser = new User(request.Email, request.Name);  //use '!' ??
+            User newUser = new User(request.Email, request.Name);  
 
-            var validationResult = await userValidator.ValidateAsync(request, cancellationToken);
+            ValidationResult validationResult = await userValidator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
             {
                 return new AddUserResponseDTO
                 {
                     Success = false,
-                    Message = "Failed to create user",
+                    Message = "Failed to create user , one or more validations failed",
                     Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList()
                 };
             }
 
 
-            var result = await userManager.CreateAsync(newUser, request.Password);
+            IdentityResult result = await userManager.CreateAsync(newUser, request.Password);
 
 
             return result.Succeeded ? new AddUserResponseDTO

@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using FeatureToggle.API.Identity;
 using FeatureToggle.Application.Requests.Commands.UserCommands;
 using FeatureToggle.Domain.ConfigurationModels;
 using FeatureToggle.Domain.Entity.FeatureManagementSchema;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddIdentityApiEndpoints<User>()
                 .AddEntityFrameworkStores<FeatureManagementContext>();
+
 ///below used addidentity earlier
 builder.Services.AddIdentityCore<User>()
     .AddEntityFrameworkStores<FeatureManagementContext>()
@@ -29,13 +32,38 @@ builder.Services.Configure<Authentication>(builder.Configuration.GetSection("Aut
 //builder.Services.AddTransient<UserValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AddUserCommandValidator>();
 
-
+builder.Services.AddSwaggerGen(x =>
+{
+    x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' followed by the token."
+    });
+    x.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.@";
     options.User.RequireUniqueEmail = true;
-    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireNonAlphanumeric = true;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireDigit = false;
@@ -49,14 +77,24 @@ builder.Services.AddAuthentication(x =>
                                     })
                                     .AddJwtBearer(x =>
                                     {
-                                        x.SaveToken = false;
+                                        
                                         x.TokenValidationParameters = new TokenValidationParameters
                                         {
                                             ValidateIssuerSigningKey = true,
                                             IssuerSigningKey = new SymmetricSecurityKey(
-                                                Encoding.UTF8.GetBytes(builder.Configuration["Authentication:JWTSecret"]!))
+                                                Encoding.UTF8.GetBytes(builder.Configuration["Authentication:JWTSecret"]!)),
+                                            ValidateIssuer = true, 
+                                            ValidIssuer = builder.Configuration["Authentication:Issuer"], 
+                                            ValidateAudience = true, 
+                                            ValidAudience = builder.Configuration["Authentication:Audience"],
+                                            
                                         };
                                     });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(IdentityData.AdminUserPolicyName, p =>
+    p.RequireClaim(IdentityData.AdminUserClaimName, "True"));
+});
 
 builder.Services.AddDbContext<FeatureManagementContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("FeatureManagementDbContext")));
 builder.Services.AddDbContext<BusinessContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("FeatureManagementDbContext")));
