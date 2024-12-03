@@ -1,159 +1,159 @@
 import { NgClass } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { DialogComponent } from '../dialog/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { FeatureStatus, FeatureType } from '../enum/feature.enum';
-import { IFeature , IBusiness} from '../interface/feature.interface';
+import { IBusiness, IUpdateToggle, ISelectedFilters, IPaginatedFeatures } from '../interface/feature.interface';
+
+import { ToastrService } from 'ngx-toastr';
+import { FeatureService } from '../services/feature.service';
+import { AuthService } from '../services/auth.service';
 
 
 
 @Component({
   selector: 'app-feature-card',
   standalone: true,
-  imports: [NgClass ,RouterModule],
+  imports: [NgClass, RouterModule],
   templateUrl: './feature-card.component.html',
   styleUrls: ['./feature-card.component.scss']
 })
 
-
 export class FeatureCardComponent {
-  
-  constructor(public dialog: MatDialog, ) {}
-  
-  isAdmin = 1;
+  isAdmin: boolean;
+  currentUser: string | undefined;
+  pageNumber: number = 0;
+  business: IBusiness | undefined;  // for displaying bussiness id in dialog
+  isLoading: boolean = true;
 
-  featureTypeEnum = FeatureType;  
-  featureStatusEnum = FeatureStatus; 
-  features: IFeature[] = [
-    { name: 'Invoice Generation', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Tax Calculation', type: FeatureType.Feature, status: FeatureStatus.Disabled },
-    { name: 'Fraud Detection', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Transaction History', type: FeatureType.Release, status: FeatureStatus.Enabled},
-    { name: 'Mobile Payment', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Currency Exchange', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Batch Processing', type: FeatureType.Release, status: FeatureStatus.Disabled},
-    { name: 'Verify Bank', type: FeatureType.Feature, status: FeatureStatus.Disabled },
-    { name: 'Invoice Template', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Automated Payment', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Audit Logs', type: FeatureType.Release, status: FeatureStatus.Disabled},
-    { name: 'Report Generator', type: FeatureType.Release, status: FeatureStatus.Disabled},
-    { name: 'User Analytics', type: FeatureType.Feature, status: FeatureStatus.Enabled },
-    { name: 'Data Sync', type:FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Payment Gateway', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Currency Conversion', type: FeatureType.Feature, status: FeatureStatus.Disabled },
-    { name: 'Fraud Detection V2', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Billing Cycle', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Account Management', type: FeatureType.Feature, status: FeatureStatus.Enabled },
-    { name: 'Dynamic Pricing', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Credit Score Check', type: FeatureType.Release, status: FeatureStatus.Disabled},
-    { name: 'Customer Feedback', type: FeatureType.Feature, status: FeatureStatus.Enabled },
-    { name: 'Live Chat Support', type: FeatureType.Feature, status: FeatureStatus.Disabled},
-    { name: 'Data Encryption', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'API Throttling', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Mobile Notifications', type: FeatureType.Feature, status: FeatureStatus.Enabled },
-    { name: 'Transaction Security', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Password Reset', type: FeatureType.Feature, status: FeatureStatus.Disabled },
-    { name: 'Invoice Generation', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Tax Calculation', type: FeatureType.Feature, status: FeatureStatus.Disabled },
-    { name: 'Fraud Detection', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Transaction History', type: FeatureType.Release, status: FeatureStatus.Enabled},
-    { name: 'Mobile Payment', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Currency Exchange', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Batch Processing', type: FeatureType.Release, status: FeatureStatus.Disabled},
-    { name: 'Verify Bank', type: FeatureType.Feature, status: FeatureStatus.Disabled },
-    { name: 'Invoice Template', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Automated Payment', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Audit Logs', type: FeatureType.Release, status: FeatureStatus.Disabled},
-    { name: 'Report Generator', type: FeatureType.Release, status: FeatureStatus.Disabled},
-    { name: 'User Analytics', type: FeatureType.Feature, status: FeatureStatus.Enabled },
-    { name: 'Data Sync', type:FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Payment Gateway', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Currency Conversion', type: FeatureType.Feature, status: FeatureStatus.Disabled },
-    { name: 'Fraud Detection V2', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Billing Cycle', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Account Management', type: FeatureType.Feature, status: FeatureStatus.Enabled },
-    { name: 'Dynamic Pricing', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Credit Score Check', type: FeatureType.Release, status: FeatureStatus.Disabled},
-    { name: 'Customer Feedback', type: FeatureType.Feature, status: FeatureStatus.Enabled },
-    { name: 'Live Chat Support', type: FeatureType.Feature, status: FeatureStatus.Disabled},
-    { name: 'Data Encryption', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'API Throttling', type: FeatureType.Release, status: FeatureStatus.Disabled },
-    { name: 'Mobile Notifications', type: FeatureType.Feature, status: FeatureStatus.Enabled },
-    { name: 'Transaction Security', type: FeatureType.Release, status: FeatureStatus.Enabled },
-    { name: 'Password Reset', type: FeatureType.Feature, status: FeatureStatus.Disabled }
-  ];
+  constructor(
+    public dialog: MatDialog,
+    private featureService: FeatureService,
+    private authService: AuthService,
+    private toastr: ToastrService
+  ) {
 
-  businesses: IBusiness[] = [
-    {name: 'Business 1', businessId: '1',status: FeatureStatus.Enabled},
-    {name: 'Business 2', businessId: '2', status: FeatureStatus.Disabled},
-    {name: 'Business 3', businessId: '3', status: FeatureStatus.Disabled},
-    {name: 'Business 4', businessId: '4',status: FeatureStatus.Enabled},
-    {name: 'Business 5', businessId: '5',status: FeatureStatus.Enabled},
-    {name: 'Business 6', businessId: '6',status: FeatureStatus.Disabled},
-    {name: 'Business 7', businessId: '7',status: FeatureStatus.Disabled},
-    {name: 'Business 8', businessId: '8',status: FeatureStatus.Enabled},
-    {name: 'Business 9', businessId: '9',status: FeatureStatus.Enabled},
-    {name: 'Business 10', businessId: '10',status: FeatureStatus.Disabled},
+    //payload from jwt token
+    this.isAdmin = this.authService.checkIsAdmin();
+    this.currentUser = this.authService.getUserId();
 
-  ];
-
-
-  business: string | undefined; 
-  name: string | undefined; 
-
-
-
-
-  itemsPerPage: number = 12;
-  currentPage: number = 1;
-
-  get paginatedFeatures(): IFeature[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    return this.features.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
-  totalPages(): number {
-    return Math.ceil(this.features.length / this.itemsPerPage);
+  featureTypeEnum = FeatureType;
+  featureStatusEnum = FeatureStatus;
+
+  @Input() selectedFilters : ISelectedFilters | null = null
+
+  paginatedfeatures: IPaginatedFeatures = {
+    pageSize: 0,
+    featureCount: 0,
+    totalPages: 0,
+    featureList: []
+  };
+
+
+  ngOnChanges() {
+     if (this.selectedFilters) {
+      this.isLoading = true;
+      this.pageNumber = 0;
+      this.fetchFeatures();
+    }
   }
+
+  fetchFeatures() {
+    this.featureService.getFeatures(this.selectedFilters!, this.pageNumber).subscribe({
+      next: (response) => {
+        this.paginatedfeatures = response;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching features:', err);
+      },
+    });
+  }
+
 
   goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages()) {
-      this.currentPage = page;
+    if (page >= 0 && page <= this.paginatedfeatures.totalPages) {
+      this.pageNumber = page;
+      this.fetchFeatures();
     }
   }
 
   nextPage() {
-    if (this.currentPage < this.totalPages()) {
-      this.currentPage++;
+    if (this.pageNumber < this.paginatedfeatures.totalPages - 1) {
+      this.pageNumber++;
+      this.fetchFeatures();
     }
   }
 
   previousPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
+    if (this.pageNumber > 0) {
+      this.pageNumber--;
+      this.fetchFeatures();
     }
   }
 
+  openDialog(action: true | false, featureId: number): void {
+    // Call the API to fetch businesses
+    this.featureService.getBusinesses(action, featureId).subscribe({
+      next: (response: IBusiness[]) => {
+        // Open the dialog with the fetched businesses
+        const dialogRef = this.dialog.open(DialogComponent, {
+          width: '20%',
+          data: {
+            businesses: response
+          }
+        });
 
-  openDialog(action: FeatureStatus.Enabled | FeatureStatus.Disabled): void { 
-    const filteredBusinesses = this.businesses
-        .filter(business => action === FeatureStatus.Enabled ? business.status === FeatureStatus.Disabled : business.status === FeatureStatus.Enabled)
-        .map(business => ({ name: business.name, businessId: business.businessId, status: business.status }));
+        // Handle dialog close
+        dialogRef.afterClosed().subscribe((result: IBusiness | null) => {
+          if (result) {
+            // this.business = result;
+            this.updateFeatureToggle(featureId, Number(result.businessId), action);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error fetching businesses:', error);
+        alert('Failed to load businesses. Please try again.');
+      }
+    });
+  }
 
-    let dialogRef = this.dialog.open(DialogComponent, { 
-        width: '20%', 
-        data: { 
-          // name: this.name, id: this.business, 
-          businesses: filteredBusinesses } 
-    }); 
 
-    dialogRef.afterClosed().subscribe((result: IBusiness | null) => { 
-        if (result) {
-            this.business = result.businessId; 
-            console.log('Selected Business:', result);
+  updateFeatureToggle(featureId: number, businessId: number | null, featureStatus: boolean) {
+
+    const data: IUpdateToggle = {
+      UserId: this.currentUser,
+      featureId: featureId,
+      businessId: businessId,
+    }
+
+    const enableOrDisable : string = featureStatus === true ? 'enable' : 'disable'
+
+    this.featureService.updateToggle(enableOrDisable,data).subscribe({
+      next: (response: number) => {
+        if (response === 1) {
+          if (featureStatus === true) {
+
+            this.toastr.success('Update Successful', 'Feature Enabled')
+          }
+          else {
+            this.toastr.warning('Update Successful', 'Feature Disabled')
+          }
+
         }
-    }); 
-}
+        else {
+          this.toastr.error('Update Unsuccessful', 'Something went wrong!')
+        }
+      },
+      error: (error) => {
+        console.error('Error updating feature:', error);
+        this.toastr.error('Update Unsuccessful', 'Something went wrong!')
+      }
+    });
+  }
 
 }

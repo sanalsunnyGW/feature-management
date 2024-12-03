@@ -36,17 +36,26 @@ namespace FeatureToggle.Infrastructure.Migrations
                     b.Property<int?>("BusinessId")
                         .HasColumnType("int");
 
+                    b.Property<string>("BusinessName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("FeatureId")
                         .HasColumnType("int");
+
+                    b.Property<string>("FeatureName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Time")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Log", "featuremanagement");
                 });
@@ -107,6 +116,7 @@ namespace FeatureToggle.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -254,6 +264,17 @@ namespace FeatureToggle.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserToken", "featuremanagement");
+                });
+
+            modelBuilder.Entity("FeatureToggle.Domain.Entity.FeatureManagementSchema.Log", b =>
+                {
+                    b.HasOne("FeatureToggle.Domain.Entity.FeatureManagementSchema.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

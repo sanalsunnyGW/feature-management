@@ -2,8 +2,10 @@
 {
     public class Feature
     {
-        public int Id { get; private set; }
-        public string Name { get; private set; }
-        public List<BusinessFeatureFlag> BusinessFeatures { get; private set; }
+        public int FeatureId { get;  }
+        public string FeatureName { get; } = string.Empty;
+        public List<BusinessFeatureFlag>? BusinessFeatures { get; }
+        public FeatureType FeatureType { get; } = null! ;
+        public int FeatureTypeId { get; }
     }
 }

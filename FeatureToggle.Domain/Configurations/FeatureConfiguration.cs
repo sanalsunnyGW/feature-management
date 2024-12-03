@@ -1,4 +1,5 @@
-﻿using FeatureToggle.Domain.Entity.BusinessSchema;
+﻿using System.Reflection.Emit;
+using FeatureToggle.Domain.Entity.BusinessSchema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,13 +10,15 @@ namespace FeatureToggle.Domain.Configurations
         public void Configure(EntityTypeBuilder<Feature> builder)
         {
             builder.ToTable("Feature", "business");
-
-            builder.Property(x => x.Name).IsRequired()
+            builder.HasKey(x => x.FeatureId);
+            builder.Property(x => x.FeatureName).IsRequired()
                      .HasColumnType("nvarchar").HasMaxLength(50);
 
-            builder.HasMany(x => x.BusinessFeatures)
-                .WithOne(x => x.Feature)
-                .HasForeignKey(x => x.FeatureId);
+
+            builder.HasOne(f => f.FeatureType)
+           .WithMany()
+           .HasForeignKey(f => f.FeatureTypeId);
+           
         }
     }
 }
