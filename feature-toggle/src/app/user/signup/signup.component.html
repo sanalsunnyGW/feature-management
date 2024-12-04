@@ -1,3 +1,9 @@
+@if (isLoading) {
+<div class="loading-overlay">
+    <span class="loader"></span>
+</div>
+}
+
 <div class="mb-4 h2 text-sucess text-start">
     Sign up
 </div>
@@ -62,17 +68,18 @@
             }
 
         </div>
-        }   
+        }
 
 
-        
+
 
     </div>
     <div class="mb-3">
         <input type="password" class="form-control bg-body-secondary" placeholder="Confirm Password"
             formControlName="confirmPassword">
 
-        @if (hasDisplayableError('confirmPassword') && userForm.controls['confirmPassword'].hasError('passwordMismatch')) {
+        @if (hasDisplayableError('confirmPassword') &&
+        userForm.controls['confirmPassword'].hasError('passwordMismatch')) {
         <div class="error-feedback">
             Password doesn't match
         </div>

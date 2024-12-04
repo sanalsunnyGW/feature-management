@@ -2,10 +2,9 @@
 {
     public class Business
     {
-        public int Id { get; private set; }
-        public string Name { get; private set; }
-        
-        public List<BusinessFeatureFlag>? BusinessFeatures { get; private set; }
+        public int BusinessId { get;  }
+        public string BusinessName { get;  } = string.Empty;
+        public List<BusinessFeatureFlag>? BusinessFeatures { get; }
 
     }
 }

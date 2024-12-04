@@ -9,7 +9,7 @@ namespace FeatureToggle.Domain.Configurations
         public void Configure(EntityTypeBuilder<FeatureType> builder)
         {
             builder.ToTable("FeatureType", "business");
-
+            builder.HasKey(x => x.Id);
         }
     }
 }

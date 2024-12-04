@@ -1,35 +1,76 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FeatureCardComponent } from '../feature-card/feature-card.component';
-import { FeatureStatus, FeatureType } from '../enum/feature.enum';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { IFilterForm, ISelectedFilters } from '../interface/feature.interface';
+import { FeatureService } from '../services/feature.service';
+
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [NavbarComponent, FeatureCardComponent],
+  imports: [NavbarComponent, FeatureCardComponent, FormsModule, ReactiveFormsModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
-  featureTypeEnum = FeatureType;  
-  featureStatusEnum = FeatureStatus; 
 
+  selectedFiltersForm = new FormGroup<IFilterForm>({
+    searchQuery: new FormControl<string | null>(null),
+    featureToggleFilter: new FormControl<boolean | null>(null),
+    releaseToggleFilter: new FormControl<boolean | null>(null),
+    enabledFilter: new FormControl<boolean | null>(null),
+    disabledFilter: new FormControl<boolean | null>(null),
+  });
 
-  selectedFilters: string[] = [];
+  selectedFiltersFormValue : ISelectedFilters = this.selectedFiltersForm.value; 
+
+  @Output() applyFiltersEvent2 = new EventEmitter<ISelectedFilters>(); 
+
+  constructor(private featureService: FeatureService) { }
+
+  ngOnInit(){
+    this.selectedFiltersForm.get('enabledFilter')?.disable();
+    this.selectedFiltersForm.get('disabledFilter')?.disable();
+  } 
 
   applyFilters(): void {
-    this.selectedFilters = [];
+    this.selectedFiltersFormValue = this.selectedFiltersForm.value;
+    this.applyFiltersEvent2.emit(this.selectedFiltersFormValue);
+  }
 
-    const checkboxes = document.querySelectorAll('.form-check-input');
+  rtOptionsCheck(){
+    if(this.selectedFiltersForm.value.releaseToggleFilter === false 
+      ||this.selectedFiltersForm.value.releaseToggleFilter === null 
+    ){
+      this.selectedFiltersForm.get('featureToggleFilter')?.enable();
+      this.selectedFiltersForm.get('enabledFilter')?.setValue(null);
+      this.selectedFiltersForm.get('enabledFilter')?.disable();
+      this.selectedFiltersForm.get('disabledFilter')?.setValue(null);
+      this.selectedFiltersForm.get('disabledFilter')?.disable();
+    }
+    else{
+      this.selectedFiltersForm.get('featureToggleFilter')?.disable();
+      this.selectedFiltersForm.get('featureToggleFilter')?.setValue(null);
+      this.selectedFiltersForm.get('enabledFilter')?.enable();
+      this.selectedFiltersForm.get('disabledFilter')?.enable();
+    }
+  }
 
-    checkboxes.forEach((checkbox) => {
-      const inputElement = checkbox as HTMLInputElement;
-      if (inputElement.checked) {
-        this.selectedFilters.push(inputElement.value);
-      }
-    });
+  clearRtOptions(){
+   if(this.selectedFiltersForm.value.featureToggleFilter){
+    this.selectedFiltersForm.get('releaseToggleFilter')?.setValue(null);
+    this.selectedFiltersForm.get('releaseToggleFilter')?.disable();
+   }
+   else{
+    this.selectedFiltersForm.get('releaseToggleFilter')?.enable();
+    this.selectedFiltersForm.get('releaseToggleFilter')?.setValue(null);
+   }
+  }
 
-    // console.log('Selected Filters:', this.selectedFilters);
-    //logic
+  removeFilters(){
+    this.selectedFiltersForm.reset();
+    this.selectedFiltersForm.get('releaseToggleFilter')?.enable();
+    this.selectedFiltersForm.get('featureToggleFilter')?.enable();
   }
 }

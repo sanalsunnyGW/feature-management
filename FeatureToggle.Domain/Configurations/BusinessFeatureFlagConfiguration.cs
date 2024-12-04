@@ -9,14 +9,18 @@ namespace FeatureToggle.Domain.Configurations
         public void Configure(EntityTypeBuilder<BusinessFeatureFlag> builder)
         {
             builder.ToTable("BusinessFeatureFlag", "business");
+            builder.HasKey(x => x.FeatureFlagId);
 
-            builder.HasOne(bf => bf.Business)
-              .WithMany(b => b.BusinessFeatures)
-              .HasForeignKey(bf => bf.BusinessId);
+            builder
+            .HasOne(bf => bf.Business) 
+            .WithMany(x => x.BusinessFeatures) 
+            .HasForeignKey(bf => bf.BusinessId); 
 
-            builder.HasOne(bf => bf.Feature)
-                   .WithMany(f => f.BusinessFeatures)
-                   .HasForeignKey(bf => bf.FeatureId);
+           
+            builder
+                .HasOne(bf => bf.Feature)
+                .WithMany(x => x.BusinessFeatures) 
+                .HasForeignKey(bf => bf.FeatureId);
         }
     }
 }

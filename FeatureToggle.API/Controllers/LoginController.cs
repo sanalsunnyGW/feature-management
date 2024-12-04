@@ -13,9 +13,8 @@ namespace FeatureToggle.API.Controllers
         private readonly IMediator _mediator = mediator;
 
         [HttpPost]
-        public async Task<LoginResponseDTO> SignIn(GetAuthTokenQuery command)
+        public async Task<LoginResponseDTO> SignIn(GetAuthTokenQuery command, CancellationToken cancellationToken = default)
         {
-            var cancellationToken = HttpContext.RequestAborted;
             return await _mediator.Send(command,cancellationToken);
         }
     }
